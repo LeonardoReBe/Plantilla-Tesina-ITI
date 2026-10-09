@@ -1,0 +1,194 @@
+% =====================================================================================
+% REVISIÓN 1  -  Introducción, Planteamiento del problema, Objetivos, Justificación, Alcances y limitaciones
+% Escribe tu texto FUERA de los recuadros \begin{guia} ... \end{guia}.
+% No cambies los títulos ni borres los comentarios «% audit:req=...» al final de cada \section / \subsection.
+% =====================================================================================
+
+\section{Introducción} \label{sec:introduccion} % audit:req=introduccion
+
+\begin{guia}[Guía: Introducción (Revisión 1)]
+\textbf{¿Para qué sirve?} Presenta tu trabajo a un lector que no lo conoce y lo invita a seguir leyendo. Es el resumen
+``de entrada'' del proyecto: contexto, problema, propuesta y organización del documento.
+
+\textbf{Debe responder:}
+\begin{itemize}[nosep,leftmargin=*]
+  \item ¿En qué contexto (sector, empresa, área tecnológica) se desarrolla el proyecto?
+  \item ¿Cuál es el problema o la necesidad, dicho en pocas líneas? (el detalle va en \emph{Planteamiento del problema}).
+  \item ¿Qué se propone hacer y qué se espera lograr?
+  \item ¿Por qué es importante? (una idea; el detalle va en \emph{Justificación}).
+  \item ¿Cómo está organizado el documento? (una frase por sección o capítulo).
+\end{itemize}
+
+\textbf{Extensión mínima:} 150 palabras (1 a 2 páginas), redactadas con tus propias palabras.
+
+\textbf{Errores frecuentes:} copiar definiciones de Internet; escribir solo ``en este capítulo se verá\ldots'' sin decir
+nada concreto; dejar la introducción para el final y no actualizarla cuando el proyecto cambia.
+
+\textbf{Cómo se revisa:} claridad del contexto, que el problema y la propuesta se entiendan sin leer el resto, y que la
+organización descrita coincida con las secciones reales del documento.
+\end{guia}
+
+% >>> ESCRIBE AQUÍ el texto de la introducción (fuera de la guía) <<<
+En las organizaciones, una parte considerable de la operación administrativa depende del procesamiento de documentos de compra: facturas, órdenes de compra y remisiones. Estos documentos concentran la evidencia de las transacciones comerciales y constituyen el insumo principal de los procesos de cuentas por pagar, registro contable y auditoría. No obstante, en un número significativo de empresas dicho procesamiento se realiza todavía mediante captura manual, es decir, un operador lee cada documento y transcribe sus datos a un sistema de gestión o a una hoja de cálculo\cite{ap_digitization_2024}.
+
+La captura manual de documentos presenta limitaciones ampliamente documentadas. En primer lugar, consume tiempos de operación elevados, pues cada documento requiere lectura, interpretación y transcripción campo por campo. En segundo lugar, introduce errores de digitación en datos críticos como montos, fechas, folios y claves fiscales, errores que posteriormente generan discrepancias en conciliaciones, retrasos en pagos y observaciones en auditorías\cite{manual_entry_errors_2023}.
+
+En el contexto mexicano, esta problemática adquiere una dimensión adicional. El Comprobante Fiscal Digital por Internet (CFDI) constituye el esquema de facturación electrónica administrado por el Servicio de Administración Tributaria (SAT), en el cual cada comprobante se identifica mediante un folio fiscal único denominado UUID, y tanto emisor como receptor se identifican mediante su Registro Federal de Contribuyentes (RFC)\cite{sat_cfdi_2024}. La verificación de estos elementos —RFC de emisor y receptor, UUID, subtotal, impuestos y total— resulta indispensable para la validez fiscal de las operaciones, por lo que un error de captura en cualquiera de ellos compromete la trazabilidad de la transacción\cite{sat_cfdi_validation_2023}.
+
+Frente a esta situación, el reconocimiento óptico de caracteres (OCR, por sus siglas en inglés) ofrece una vía para convertir imágenes de documentos en texto procesable por computadora\cite{tesseract_ocr}. Sin embargo, el texto plano obtenido por OCR no basta por sí mismo: se requiere extraer de él una estructura de campos (folio, fecha, emisor, conceptos, totales), clasificar el tipo de documento y persistir el resultado en un sistema consultable mediante una interfaz de programación de aplicaciones (API)\cite{structured_extraction_2023}.
+
+Este proyecto surge de la necesidad de reducir los tiempos y errores asociados a la captura manual de facturas, órdenes de compra y remisiones en el contexto mexicano. Para ello se propone el desarrollo de un sistema de digitalización inteligente de documentos de compra, el cual recibe documentos en formato PDF o imagen, aplica preprocesamiento de imagen, ejecuta OCR con estimación de confianza por palabra, clasifica el documento mediante reglas (factura\textbar orden\_compra\textbar remision\textbar desconocido) y persiste el resultado estructurado en una base de datos relacional, exponiendo dichos resultados a través de un backend con API REST.
+
+El sistema opera sobre documentos mixtos, tanto sintéticos como una factura real anonimizada, y se implementa con tecnologías abiertas y de ejecución local: FastAPI, Pydantic v2, SQLAlchemy, PostgreSQL, OpenCV, Tesseract (idioma español, modo de segmentación PSM 6, corrección de inclinación o \textit{deskew}), pypdf y Docker\cite{fastapi_docs}\cite{opencv_docs}. De este modo, la organización obtiene trazabilidad sobre cada documento procesado, desde su carga hasta su almacenamiento estructurado, sin depender de servicios propietarios en la nube.
+
+El presente documento se organiza de la siguiente manera: en la Sección~\ref{sec:problema} se plantea y formaliza el problema; en la Sección~\ref{sec:objetivos} se definen el objetivo general y los objetivos específicos; en la Sección~\ref{sec:justificacion} se justifica el trabajo; y en la Sección~\ref{sec:alcances_limitaciones} se delimitan los alcances y las limitaciones. Los antecedentes (contexto, empresa y teóricos, con el cuadro comparativo) se presentan en la Sección~\ref{sec:antecedentes}, el marco teórico en la Sección~\ref{sec:marco_teorico}, y a continuación la propuesta de solución, el desarrollo del sistema, y las conclusiones y el trabajo futuro.
+
+
+\subsection{Planteamiento del problema} \label{sec:problema} % audit:req=planteamiento
+
+\begin{guia}[Guía: Planteamiento del problema (Revisión 1)]
+\textbf{¿Para qué sirve?} Describe con precisión la situación que quieres resolver y demuestra que es un problema real.
+
+\textbf{Debe responder:}
+\begin{itemize}[nosep,leftmargin=*]
+  \item ¿Qué situación actual es insatisfactoria o genera una necesidad? Descríbela con hechos, ejemplos o cifras.
+  \item ¿Quién la padece (usuarios, área, empresa) y cómo se manifiesta (retrasos, errores, costos, quejas)?
+  \item ¿Qué consecuencias tiene no resolverla?
+  \item ¿Qué se ha intentado hasta ahora y qué falta (la brecha)? Conecta con los \emph{Antecedentes}.
+  \item ¿Cuál es el problema en una sola frase? Escríbelo como enunciado del problema o como pregunta de
+        investigación (p. ej. ``¿Cómo reducir X en Y mediante Z?'').
+\end{itemize}
+
+\textbf{Extensión mínima:} 120 palabras.
+
+\textbf{Errores frecuentes:} describir la solución en lugar del problema (``el problema es que no hay un sistema web'');
+problemas sin evidencia; enunciados tan amplios que no se pueden resolver en una estadía.
+
+\textbf{Cómo se revisa:} que el problema esté delimitado, sea verificable y que los objetivos lo atiendan.
+\end{guia}
+
+% >>> ESCRIBE AQUÍ el planteamiento del problema <<<
+El problema que aborda el presente trabajo puede formularse mediante las siguientes preguntas de investigación:
+\begin{itemize}
+    \item ¿Cómo convertir facturas, órdenes de compra y remisiones recibidas como PDF o imagen en registros estructurados y consultables, sin recurrir a la captura manual campo por campo?
+    \item ¿Qué nivel de exactitud por campo (RFC, UUID, folio, fecha, conceptos, totales) puede alcanzarse con un pipeline de OCR abierto ejecutado en CPU local, con preprocesamiento de imagen y clasificación por reglas?
+    \item ¿Cómo diseñar un contrato de API REST que exponga los resultados de la digitalización (documento, páginas, campos extraídos y confianza de OCR) de forma tipada, validada y persistente?
+    \item ¿De qué manera debe evaluarse el sistema para demostrar su desempeño, considerando una tolerancia de $\pm 1.00$ en montos y metas de exactitud por campo?
+\end{itemize}
+
+A partir de las preguntas anteriores, el problema a resolver se formaliza como sigue: se requiere diseñar, implementar y evaluar un sistema de digitalización inteligente que, dado un conjunto de documentos de compra en formato PDF o imagen (facturas CFDI, órdenes de compra y remisiones, en español y con formatos heterogéneos entre emisores), produzca automáticamente registros estructurados y persistentes —con campos de folio, fecha, RFC de emisor y receptor, UUID, conceptos y totales— consultables mediante una API REST tipada y validada, de modo que se eliminen la transcripción manual campo por campo, se reporte la confianza de cada reconocimiento para revisión dirigida y se demuestre el desempeño por campo bajo un protocolo de evaluación reproducible (tolerancia de $\pm 1.00$ en montos; umbrales de diseño de 90\% en RFC, UUID y totales, y de 80\% en conceptos y órdenes de compra, aún no medidos empíricamente en este avance).
+
+
+\subsection{Objetivos} \label{sec:objetivos} % audit:req=objetivos
+
+\begin{guia}[Guía: Objetivo general y objetivos específicos (Revisión 1)]
+\textbf{¿Para qué sirve?} Fija qué vas a lograr. Todo lo demás (resultados y conclusiones) se compara contra estos objetivos.
+
+\textbf{Objetivo general} (uno): verbo en infinitivo + qué se hará + con qué o cómo + para qué, y si es posible un criterio
+medible. \emph{Ejemplo:} ``Desarrollar un sistema web de notificaciones para familiares de pacientes hospitalizados que
+reduzca en 50\% las llamadas de consulta al área de enfermería.''
+
+\textbf{Objetivos específicos} (de 3 a 6): pasos concretos y verificables que, al cumplirse, logran el objetivo general.
+Cada uno debe poder demostrarse con un resultado (un módulo, un diagrama, un experimento) que luego aparecerá en
+\emph{Resultados} y se retomará en \emph{Conclusiones}. Deben ser SMART: específicos, medibles, alcanzables, relevantes y
+con tiempo definido.
+
+\textbf{Debe responder:} ¿qué voy a entregar? ¿cómo sabré que lo logré? ¿cada objetivo específico aporta al general?
+
+\textbf{Extensión mínima:} 40 palabras en total.
+
+\textbf{Errores frecuentes:} verbos no medibles (``conocer'', ``entender'', ``estudiar''); objetivos que son actividades
+(``investigar sobre\ldots'') y no logros; más de un objetivo general; objetivos que luego no se atienden en el documento.
+
+\textbf{Cómo se revisa:} coherencia con el problema, medibilidad y que cada objetivo tenga un resultado asociado.
+\end{guia}
+
+\subsubsection{Objetivo general} \label{subsec:objetivo_general}
+% >>> ESCRIBE AQUÍ el objetivo general (una sola oración) <<<
+Desarrollo de un sistema de digitalización inteligente de facturas y documentos de compra basado en OCR, extracción estructurada y backend con API REST, capaz de recibir documentos en formato PDF o imagen, aplicar preprocesamiento, ejecutar reconocimiento óptico de caracteres con confianza por palabra, clasificar el tipo de documento y persistir el resultado en una base de datos relacional para su consulta posterior.
+
+\subsubsection{Objetivos específicos} \label{subsec:objetivos_especificos}
+% >>> ESCRIBE AQUÍ los objetivos específicos como lista numerada: \begin{enumerate} \item ... \end{enumerate} <<<
+\begin{enumerate}
+    \item Diseñar e implementar un endpoint de carga de documentos que reciba archivos PDF o imagen, los almacene y registre sus metadatos en una base de datos PostgreSQL mediante modelos validados con Pydantic v2.
+    \item Implementar una etapa de preprocesamiento de imagen con OpenCV que incluya conversión a escala de grises, corrección de inclinación (\textit{deskew}) y binarización, a fin de mejorar la calidad de entrada del motor de OCR\cite{opencv_docs}.
+    \item Integrar el motor Tesseract (idioma español, PSM 6) para la extracción de texto con estimación de confianza por palabra, incluyendo el tratamiento de documentos PDF con capa de texto mediante pypdf y de documentos escaneados sin capa mediante renderizado a imagen\cite{tesseract_ocr}.
+    \item Desarrollar un clasificador por reglas que determine el tipo de documento (factura\textbar orden\_compra\textbar remision\textbar desconocido) a partir de palabras clave y patrones presentes en el texto reconocido.
+    \item Diseñar el esquema relacional de persistencia (documentos, páginas, campos extraídos y resultados de OCR) con SQLAlchemy sobre PostgreSQL, garantizando la trazabilidad de cada documento procesado.
+    \item Desarrollar una API REST con FastAPI que exponga las operaciones de carga, consulta y recuperación de resultados, con esquemas de validación tipados mediante Pydantic v2\cite{fastapi_docs}.
+    \item Definir y aplicar un protocolo de evaluación por campo (RFC, UUID, folio, fecha, conceptos, totales) con tolerancia de $\pm 1.00$ en montos, sobre un conjunto mixto de documentos sintéticos y una factura real anonimizada, con metas de exactitud de al menos 90\% en RFC, UUID y totales, y de al menos 80\% en conceptos y órdenes de compra.
+    \item Contenerizar el sistema con Docker para garantizar la reproducibilidad del entorno de ejecución en CPU local\cite{docker_docs}.
+\end{enumerate}
+
+
+\subsection{Justificación} \label{sec:justificacion} % audit:req=justificacion
+
+\begin{guia}[Guía: Justificación (Revisión 1)]
+\textbf{¿Para qué sirve?} Explica por qué vale la pena dedicar tiempo y recursos a este proyecto.
+
+\textbf{Debe responder:}
+\begin{itemize}[nosep,leftmargin=*]
+  \item ¿Quién se beneficia y de qué manera? (empresa, usuarios, la comunidad, tú).
+  \item ¿Qué se gana en términos prácticos, económicos, sociales, tecnológicos o científicos? Usa datos cuando existan.
+  \item ¿Qué pasaría si no se hace?
+  \item ¿Por qué es viable hacerlo ahora y por qué con este enfoque?
+  \item ¿Cómo se relaciona con el perfil de egreso de tu programa académico?
+\end{itemize}
+
+\textbf{Extensión mínima:} 100 palabras.
+
+\textbf{Errores frecuentes:} repetir el problema con otras palabras; afirmaciones sin sustento (``mejorará mucho la
+eficiencia''); olvidar al beneficiario.
+
+\textbf{Cómo se revisa:} que los beneficios sean concretos y consistentes con el problema y los objetivos.
+\end{guia}
+
+% >>> ESCRIBE AQUÍ la justificación <<<
+La automatización de la captura de documentos de compra se justifica, en primer lugar, por el ahorro de tiempo operativo: al convertir la lectura manual campo por campo en un pipeline automático de carga, OCR, clasificación y persistencia, el personal administrativo puede dedicarse a tareas de verificación y análisis en lugar de la transcripción\cite{ap_digitization_2024}. En segundo lugar, por la reducción de errores: la extracción estructurada con reporte de confianza por palabra permite identificar los campos dudosos y someterlos a revisión humana dirigida, en lugar de revisar la totalidad del documento\cite{structured_extraction_2023}.
+
+En tercer lugar, por la trazabilidad: cada documento queda registrado con sus metadatos, sus páginas, sus campos extraídos y la confianza de su reconocimiento, lo cual facilita auditorías y conciliaciones posteriores. En cuarto lugar, por la pertinencia fiscal mexicana: al contemplar campos propios del CFDI como el RFC y el UUID, el sistema se alinea con los requerimientos del SAT y no con un modelo genérico de facturación\cite{sat_cfdi_2024}.
+
+Finalmente, la elección de tecnologías abiertas y de ejecución local (Tesseract, OpenCV, FastAPI, PostgreSQL, Docker) se justifica porque evita la dependencia de servicios propietarios en la nube, mantiene los documentos fiscales dentro de la infraestructura de la organización y permite auditar cada etapa del pipeline, desde el preprocesamiento hasta el contrato de la API\cite{tesseract_ocr}\cite{fastapi_docs}.
+
+
+\subsection{Alcances y limitaciones} \label{sec:alcances_limitaciones} % audit:req=alcances
+
+\begin{guia}[Guía: Alcances y limitaciones (Revisión 1)]
+\textbf{¿Para qué sirve?} Marca las fronteras del proyecto para evitar expectativas irreales.
+
+\textbf{Alcances} -- lo que \emph{sí} incluye el trabajo. Debe responder: ¿qué módulos, funciones, procesos, usuarios o
+datos se cubren? ¿en qué plataformas o entornos? ¿qué entregables habrá? ¿qué queda \emph{explícitamente fuera}?
+
+\textbf{Limitaciones} -- lo que restringe el trabajo y que no depende totalmente de ti. Debe responder: ¿qué límites hay
+de tiempo (un cuatrimestre), recursos, acceso a datos o a la infraestructura de la empresa, tecnología, permisos?
+¿cómo pueden afectar la validez o generalización de los resultados?
+
+\textbf{Extensión mínima:} 60 palabras en total.
+
+\textbf{Errores frecuentes:} prometer más de lo que cabe en la estadía; confundir limitaciones con excusas; no decir qué
+queda fuera.
+
+\textbf{Cómo se revisa:} realismo del alcance y honestidad de las limitaciones.
+\end{guia}
+
+\subsubsection{Alcances} \label{subsec:alcances}
+% >>> ESCRIBE AQUÍ los alcances <<<
+\begin{itemize}
+    \item Recepción de documentos en formato PDF o imagen a través de un endpoint de carga, con almacenamiento del archivo y registro de sus metadatos en PostgreSQL.
+    \item Preprocesamiento de imagen con OpenCV (escala de grises, \textit{deskew} y binarización) y ejecución de OCR con Tesseract (español, PSM 6), con reporte de confianza por palabra; los PDF con capa de texto se tratan con pypdf y los escaneados sin capa se renderizan previamente a imagen.
+    \item Clasificación del documento por reglas (factura\textbar orden\_compra\textbar remision\textbar desconocido) y extracción de campos estructurados (folio, fecha, RFC de emisor y receptor, UUID, conceptos y totales).
+    \item Persistencia de documentos, páginas y resultados en PostgreSQL mediante SQLAlchemy, con trazabilidad de cada documento procesado.
+    \item Exposición de los resultados mediante una API REST documentada con FastAPI y esquemas validados con Pydantic v2.
+    \item Evaluación por campo con tolerancia de $\pm 1.00$ en montos, sobre un conjunto mixto de documentos sintéticos y una factura real anonimizada.
+\end{itemize}
+
+\subsubsection{Limitaciones} \label{subsec:limitaciones}
+% >>> ESCRIBE AQUÍ las limitaciones <<<
+\begin{itemize}
+    \item Idioma: el sistema se encuentra optimizado para documentos en español; su desempeño en documentos en otros idiomas no ha sido evaluado.
+    \item Documentos de entrada: los PDF escaneados sin capa de texto requieren renderizado previo a imagen, proceso que incrementa el tiempo de cómputo.
+    \item Entorno de ejecución: el sistema opera en CPU local sin aceleración por GPU, lo cual condiciona los tiempos de procesamiento.
+    \item Alcance del equipo: la validación de tres vías (\textit{three-way match}) entre factura, orden de compra y remisión, así como la interfaz web (frontend), pertenecen al trabajo del equipo y se mencionan solo como contexto; no forman parte de la presente tesina, limitada al módulo de OCR, extracción y backend del autor.
+    \item Carácter de las metas: las metas de exactitud por campo (90\% en RFC, UUID y totales; 80\% en conceptos y órdenes de compra) constituyen umbrales de diseño aún no medidos empíricamente al redactar este avance; deberán verificarse en la fase de pruebas.
+    \item Extracción avanzada: la extracción estructurada asistida por modelo multimodal de lenguaje (LLM) corresponde a una fase siguiente y no forma parte del alcance aquí descrito.
+\end{itemize}
