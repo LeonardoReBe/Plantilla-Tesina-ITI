@@ -38,11 +38,11 @@ reales; evita depender solo de blogs.
 % >>> ESCRIBE AQUÍ los antecedentes del problema <<<
 Existen múltiples publicaciones y productos donde se documentan diferentes métodos para la digitalización de facturas y documentos comerciales. Cada uno hace uso de distintas técnicas de reconocimiento óptico de caracteres, extracción estructurada y validación fiscal. A continuación se describen tres enfoques representativos, cuyas características se comparan con el sistema propuesto en la Tabla~\ref{tab:comparativa_antecedentes}.
 
-En primer lugar, el enfoque clásico basado en Tesseract combinado con reglas heurísticas constituye la vía abierta más documentada. Diversos trabajos reportan pipelines de preprocesamiento con OpenCV, reconocimiento con Tesseract y extracción mediante expresiones regulares para facturas con formatos conocidos\cite{tesseract_ocr}\cite{opencv_docs}. Su principal fortaleza es la ejecución local sin costos por documento; su principal limitación es la fragilidad de las reglas ante formatos no previstos y la ausencia de validación fiscal específica para el contexto mexicano.
+En primer lugar, el enfoque clásico basado en Tesseract combinado con reglas heurísticas constituye la vía abierta más documentada. Diversos trabajos reportan pipelines de preprocesamiento con OpenCV, reconocimiento con Tesseract y extracción mediante expresiones regulares para facturas con formatos conocidos\cite{tesseract_ocr, opencv_docs}. Su principal fortaleza es la ejecución local sin costos por documento; su principal limitación es la fragilidad de las reglas ante formatos no previstos y la ausencia de validación fiscal específica para el contexto mexicano.
 
 En segundo lugar, los servicios cognitivos en la nube, con Google Cloud Document AI como nube de referencia, proporcionan OCR de alta calidad y extracción estructurada pre-entrenada mediante API\cite{gcp_document_ai}. Su fortaleza radica en la exactitud y en la extracción de tablas; sus limitaciones frente a lo propuesto son la dependencia de un proveedor externo, el costo por documento, el envío de documentos fiscales fuera de la infraestructura de la organización y la falta de un contrato de API diseñado para campos propios del CFDI mexicano como el UUID.
 
-En tercer lugar se encuentra el sistema propuesto en el presente trabajo, el cual combina OCR abierto con preprocesamiento (escala de grises, \textit{deskew}, binarización), clasificación por reglas (factura\textbar orden\_compra\textbar remision\textbar desconocido), persistencia relacional y API REST tipada, con campos fiscales mexicanos (RFC, UUID, totales) como ciudadanos de primera clase del esquema de datos\cite{sat_cfdi_2024}\cite{fastapi_docs}.
+En tercer lugar se encuentra el sistema propuesto en el presente trabajo, el cual combina OCR abierto con preprocesamiento (escala de grises, \textit{deskew}, binarización), clasificación por reglas (factura\textbar orden\_compra\textbar remision\textbar desconocido), persistencia relacional y API REST tipada, con campos fiscales mexicanos (RFC, UUID, totales) como ciudadanos de primera clase del esquema de datos\cite{sat_cfdi_2024, fastapi_docs}.
 
 Lo que queda sin resolver —y constituye la brecha que aborda el presente trabajo— es un pipeline abierto, de ejecución local y auditable, con campos CFDI nativos, trazabilidad por documento, página, campo y confianza de reconocimiento, y un contrato de API tipado y validado para su integración con sistemas consumidores.
 
@@ -71,7 +71,7 @@ datos personales.
 \end{guia}
 
 % >>> ESCRIBE AQUÍ los antecedentes de la empresa <<<
-El Centro de Innovación Industrial en Inteligencia Artificial, CII.IA, se ubica en Monterrey, Nuevo León, México. Según su información pública, su actividad relaciona la inteligencia artificial con necesidades empresariales mediante consultoría, capacitación y prototipado de soluciones (CII.IA, 2026a)\cite{ciiia_2026a}. La organización comunica un enfoque orientado a pasar de la identificación de una necesidad a la construcción, validación y escalamiento de soluciones de inteligencia artificial, además de ofrecer entornos controlados para probar ideas y construir productos mínimos viables (CII.IA, 2026b)\cite{ciiia_2026b}.
+El Centro de Innovación Industrial en Inteligencia Artificial, CII.IA, se ubica en Monterrey, Nuevo León, México. Según su información pública, su actividad relaciona la inteligencia artificial con necesidades empresariales mediante consultoría, capacitación y prototipado de soluciones\cite{ciiia_2026a}. La organización comunica un enfoque orientado a pasar de la identificación de una necesidad a la construcción, validación y escalamiento de soluciones de inteligencia artificial, además de ofrecer entornos controlados para probar ideas y construir productos mínimos viables\cite{ciiia_2026b}.
 
 En dicho contexto se desarrolló la estadía profesional del autor, cuyo propósito fue construir un prototipo funcional de digitalización inteligente de facturas y documentos de compra. El prototipo corresponde al módulo de OCR, extracción estructurada y backend descrito en la presente tesina, y se concibe como un producto mínimo viable susceptible de validación y escalamiento posterior dentro de los entornos controlados que la organización ofrece\cite{ciiia_2026b}.
 
@@ -97,11 +97,11 @@ tu proyecto? ¿qué fuentes los respaldan?
 % >>> ESCRIBE AQUÍ los antecedentes teóricos <<<
 \paragraph{Reconocimiento óptico de caracteres (OCR).} El reconocimiento óptico de caracteres (OCR, por sus siglas en inglés) es el proceso mediante el cual una computadora convierte imágenes de texto —ya sean escaneadas, fotografiadas o renderizadas— en caracteres codificados procesables y editables\cite{tesseract_ocr}.
 
-Los motores modernos de OCR operan mediante una secuencia de etapas: preprocesamiento de la imagen, segmentación de líneas y palabras, reconocimiento de caracteres mediante modelos entrenados y asignación de un nivel de confianza a cada decisión. Tesseract, uno de los motores abiertos más utilizados, permite configurar el idioma de reconocimiento y el modo de segmentación de página (PSM, por sus siglas en inglés), así como obtener la confianza de cada palabra reconocida, información que resulta fundamental para dirigir la revisión humana hacia los campos dudosos\cite{tesseract_ocr}.
+Los motores modernos de OCR operan mediante una secuencia de etapas: preprocesamiento de la imagen, segmentación de líneas y palabras, reconocimiento de caracteres mediante modelos entrenados y asignación de un nivel de confianza a cada decisión. Tesseract, uno de los motores abiertos más utilizados, permite configurar el idioma de reconocimiento y el modo de segmentación de página (PSM, por sus siglas en inglés), así como obtener la confianza de cada palabra reconocida, información que resulta fundamental para dirigir la revisión humana hacia los campos dudosos\cite{smith_tesseract_2007, tesseract_ocr}.
 
 \paragraph{Extracción estructurada de información.} La extracción estructurada es el proceso de identificar, dentro de un texto no estructurado, un conjunto de campos con significado definido (por ejemplo, folio, fecha, emisor, conceptos, totales) y representarlos conforme a un esquema tipado\cite{structured_extraction_2023}.
 
-En el caso de los documentos de compra, la extracción estructurada enfrenta desafíos particulares: los formatos varían entre emisores, los conceptos se presentan como tablas de renglones múltiples y los montos admiten distintos formatos numéricos. Por ello, los sistemas de extracción combinan expresiones regulares, reglas heurísticas y, en fases avanzadas, modelos de lenguaje, además de reportar métricas de exactitud por campo para demostrar su desempeño\cite{structured_extraction_2023}.
+En el caso de los documentos de compra, la extracción estructurada enfrenta desafíos particulares: los formatos varían entre emisores, los conceptos se presentan como tablas de renglones múltiples y los montos admiten distintos formatos numéricos. Por ello, los sistemas de extracción combinan expresiones regulares, reglas heurísticas y, en fases avanzadas, modelos de lenguaje, además de reportar métricas de exactitud por campo para demostrar su desempeño\cite{kim_donut_2022, structured_extraction_2023}.
 
 \paragraph{Interfaces de programación de aplicaciones (API REST).} Una interfaz de programación de aplicaciones (API, por sus siglas en inglés) es un contrato mediante el cual un sistema expone sus funcionalidades a otros programas de forma controlada. El estilo arquitectónico REST (transferencia de estado representacional) organiza dicho contrato alrededor de recursos identificados por rutas y operaciones estándar del protocolo HTTP\cite{fielding_rest_2000}.
 
@@ -136,9 +136,9 @@ significativos.
   \small
   \caption{Comparación de enfoques de digitalización frente al sistema propuesto.}
   \label{tab:comparativa_antecedentes}
-  \begin{tabular}{@{}p{2.5cm}p{3.0cm}p{3.0cm}p{3.0cm}p{3.0cm}@{}}
+  \begin{tabular}{@{}p{2.2cm}p{2.7cm}p{2.7cm}p{2.7cm}p{2.7cm}@{}}
     \toprule
-    \textbf{Solución} & \textbf{Técnica OCR/extracción} & \textbf{Validación fiscal CFDI} & \textbf{Integración API} & \textbf{Limitación frente a lo propuesto} \\
+    \textbf{Solución} & \textbf{Técnica de OCR y extracción} & \textbf{Validación fiscal CFDI} & \textbf{Integración API} & \textbf{Limitación frente a lo propuesto} \\
     \midrule
     Tesseract + reglas clásico &
     OCR Tesseract (spa, PSM 6) con preprocesamiento OpenCV y extracción por expresiones regulares &
