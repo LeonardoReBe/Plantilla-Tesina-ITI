@@ -179,7 +179,7 @@ queda fuera.
     \item Clasificación del documento por reglas (factura\textbar orden\_compra\textbar remision\textbar desconocido) y extracción de campos estructurados (folio, fecha, RFC de emisor y receptor, UUID, conceptos y totales).
     \item Persistencia de documentos, páginas y resultados en PostgreSQL mediante SQLAlchemy, con trazabilidad de cada documento procesado.
     \item Exposición de los resultados mediante una API REST documentada con FastAPI y esquemas validados con Pydantic v2.
-    \item Evaluación por campo con tolerancia de $\pm 1.00$ en montos, sobre un conjunto mixto de documentos sintéticos y una factura real anonimizada.
+    \item Evaluación por campo con tolerancia de $\pm 1.00$ en montos y promedio macro, sobre 30 documentos oficiales más 4 excluidos documentados, con scripts \textit{evaluate} y \textit{bench} versionados; el OCR real se evalúa sobre un subconjunto escaneado mínimo de N${=}12$ con protocolo \textit{deskew} más binarización adaptativa más Tesseract \textit{spa} (PSM~6).
 \end{itemize}
 
 \subsubsection{Limitaciones} \label{subsec:limitaciones}
@@ -189,6 +189,7 @@ queda fuera.
     \item Documentos de entrada: los PDF escaneados sin capa de texto requieren renderizado previo a imagen, proceso que incrementa el tiempo de cómputo.
     \item Entorno de ejecución: el sistema opera en CPU local sin aceleración por GPU, lo cual condiciona los tiempos de procesamiento.
     \item Alcance del equipo: la validación de tres vías (\textit{three-way match}) entre factura, orden de compra y remisión, así como la interfaz web (frontend), pertenecen al trabajo del equipo y se mencionan solo como contexto; no forman parte de la presente tesina, limitada al módulo de OCR, extracción y backend del autor.
-    \item Carácter de las metas: las metas de exactitud por campo (90\% en RFC, UUID y totales; 80\% en conceptos y órdenes de compra) constituyen umbrales de diseño aún no medidos empíricamente al redactar este avance; deberán verificarse en la fase de pruebas.
+    \item Carácter de las metas: las metas de exactitud por campo (RFC, UUID y totales con F $\geq 0.85$ rumbo a $0.90$; tipo documental $\geq 0.85$; conceptos con F1 $\geq 0.70$; 100\% de JSON válido; p95 $< 60$~s extremo a extremo) constituyen umbrales de diseño aún no medidos empíricamente al redactar este avance; deberán verificarse en la fase de pruebas con el protocolo de la Sección~\ref{sec:prop_trazabilidad}.
+    \item Medición con OCR real: la medición exhaustiva con OCR real sobre la totalidad de los 30 oficiales queda condicionada al entorno Docker completo y se reserva a la fase de pruebas; el subconjunto escaneado mínimo de N${=}12$ sí forma parte del criterio de aceptación del presente avance.
     \item Extracción avanzada: la extracción estructurada asistida por modelo multimodal de lenguaje (LLM) corresponde a una fase siguiente y no forma parte del alcance aquí descrito.
 \end{itemize}

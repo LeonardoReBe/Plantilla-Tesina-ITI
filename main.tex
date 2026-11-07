@@ -15,6 +15,9 @@
 
 \input{configuracion/datos}       % <-- tus datos (único archivo de configuración que editas)
 \input{configuracion/preambulo}   % paquetes, estilos y guías (no editar)
+% Oculta los recuadros amarillos de guía para la versión final (override permitido:
+% preámbulo oficial define \ifguias con \guiastrue; aquí se apaga sin tocar protegidos).
+\guiasfalse
 
 \begin{document}
 
